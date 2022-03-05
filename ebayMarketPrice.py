@@ -10,7 +10,7 @@ try:
     html = file.read()
     file.close()
 except FileNotFoundError:
-    print("File not found - first save webpage.html file")
+    print("File not found - first save webpage.html file as html/webpage.html")
     exit()
 
 # Parse the page
