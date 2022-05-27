@@ -15,7 +15,7 @@ try:
     html = file.read()
     file.close()
 except FileNotFoundError:
-    print("File not found - first save webpage.html file as html/webpage.html")
+    print(f"File not found - first save {ITEM}.html file as html/{ITEM}.html")
     exit()
 
 # Parse the page
@@ -37,9 +37,6 @@ sale_price = [float(price) for price in sale_price]
 
 # limit to first x prices
 sale_price = sale_price[:FIRST_N_PRICES]
-
-# Initial plot to see outliers.
-# plt.hist(Sale_Price, bins=20)
 
 # Average price excluding outliers
 final_prices = [
