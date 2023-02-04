@@ -4,10 +4,11 @@ import matplotlib.pyplot as plt
 import numpy as np
 from bs4 import BeautifulSoup
 
-LOW_OUTLIERS = 551
-HIGH_OUTLIERS = 2500
-ITEM = "m1-16gb-pro"
-FIRST_N_PRICES = 50
+LOW_OUTLIERS = 20
+HIGH_OUTLIERS = 400
+ITEM = "bose quietcomfort 35 ii for sale _ eBay"
+FIRST_N_PRICES = 60
+NOT_THESE_ITEMS = ["earbuds", "replacement"]
 
 try:
     # Save file as f"{ITEM}.html" first can no longer use requests lib due to ebay bot detection
@@ -21,27 +22,26 @@ except FileNotFoundError:
 # Parse the page
 soup = BeautifulSoup(html, "html.parser")
 
-# Obtain prices
-sale_price = [
+# filter out items that are not bose queitcomfort 35 ii
+# for each ebay item (identified by class "s-item__wrapper clearfix"), if the span role=heading contains the word "earbuds" filter it out
+soup_items = soup.find_all("div", class_="s-item__wrapper clearfix")
+
+# Remove items identified from NOT_THESE_ITEMS
+filtered_prices = [
     (tag.get_text().strip()[1:].replace(",", ""))
-    for tag in soup.find_all("span", class_="POSITIVE")
+    for item in soup_items
+    if not any(word in item.find("span", role="heading").get_text().lower() for word in NOT_THESE_ITEMS)
+    for tag in item.find_all("span", class_="POSITIVE")
 ]
 
-# Remove strings that share class of POSITIVE
-sale_price = [
-    price for price in sale_price if all(string not in price for string in ["old", "o"])
-]
-
-# now change to floats
-sale_price = [float(price) for price in sale_price]
+# Remove strings that share class of POSITIVE and convert to float
+sale_price = [float(price) for price in filtered_prices if all(string not in price for string in ["old", "o"])]
 
 # limit to first x prices
 sale_price = sale_price[:FIRST_N_PRICES]
 
 # Average price excluding outliers
-final_prices = [
-    price for price in sale_price if price > LOW_OUTLIERS and price < HIGH_OUTLIERS
-]
+final_prices = [price for price in sale_price if price > LOW_OUTLIERS and price < HIGH_OUTLIERS]
 pct_25, pct_75 = np.percentile(final_prices, [25, 75])
 
 stats = (
